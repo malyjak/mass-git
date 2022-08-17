@@ -1,0 +1,7 @@
+{
+    "git":
+    [
+        {"branch": "master", "url": "https://github.com/malyjak/TkMinesweeper.git", "dir": "minesweeper"},
+        {"branch": "feat/jma/PedanticFixes", "url": "https://github.com/malyjak/libyaml.git", "dir": "yaml"}
+    ]
+}
