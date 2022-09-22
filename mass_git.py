@@ -15,6 +15,16 @@ from typing import Union
 script_dir_path = Path(__file__).parent
 
 
+W = '\033[0m'  # white (normal)
+R = '\033[31m' # red
+G = '\033[32m' # green
+O = '\033[33m' # orange
+B = '\033[34m' # blue
+P = '\033[35m' # purple
+
+V = '1.1'
+
+
 def select_json() -> str:
     """
     Prompts user with available json files and returns the selection.
@@ -68,7 +78,7 @@ def run_cmd(cmd: str, run_in: Path = script_dir_path, capture: bool = False) -> 
                                 stdout=subprocess.PIPE)
         return proc.communicate()[0].decode('utf-8').rstrip()
 
-    print(f"Running: '{cmd}' in {run_in}")
+    print('Running: '+O+f"{cmd}"+W+' in '+G+f"{run_in}"+W)
     proc = subprocess.Popen(shlex.split(cmd),
                             cwd=run_in)
     proc.communicate()
@@ -163,20 +173,40 @@ class MassGit:
         Displays help.
         """
 
-        print("List of supported commands:")
-        print(f"{'h help':<20}Displays this help")
-        print(f"{'s show':<20}Shows current branches for all repositories")
-        print(f"{'r refresh':<20}Refreshes branches to json defaults")
-        print(f"{'p pull':<20}Performs pull in all repositories")
-        print(f"{'q quit':<20}Quits program")
+        print(O+f"{'h help':<30}"+G+"Displays this help"+W)
+        print(O+f"{'v version':<30}"+G+"Displays script version"+W)
+        print(O+f"{'b branch':<30}"+G+"Displays current branch for all repositories"+W)
+        print(O+f"{'bs branches':<30}"+G+"Displays all branches for all repositories"+W)
+        print(O+f"{'r refresh':<30}"+G+"Refreshes branches to json defaults"+W)
+        print(O+f"{'s status':<30}"+G+"Gets status from all repositories"+W)
+        print(O+f"{'p pull':<30}"+G+"Performs pull in all repositories"+W)
+        print(O+f"{'q quit':<30}"+G+"Quits program"+W)
 
-    def show(self) -> None:
+    def version(self) -> None:
         """
-        Shows current branch for all repositories.
+        Displays script version.
+        """
+
+        print(O+V+W)
+
+    def branch(self) -> None:
+        """
+        Displays current branch for all repositories.
         """
 
         for repo in self.repos:
-            print(f"{repo['dir']:<20}{get_current_branch(repo['dir'])}")
+            print(O+f"{repo['dir']:<30}"+G+f"{get_current_branch(repo['dir'])}"+W)
+
+    def branches(self) -> None:
+        """
+        Displays all branches for all repositories.
+        """
+
+        for repo in self.repos:
+            branches = run_cmd("git branch",
+                               script_dir_path / repo['dir'],
+                               True)
+            print(O+repo['dir']+'\n'+G+branches+W) # TODO: enhance
 
     def refresh(self) -> None:
         """
@@ -185,6 +215,15 @@ class MassGit:
 
         for repo in self.repos:
             run_cmd(f"git checkout {repo['branch']}",
+                    script_dir_path / repo['dir'])
+
+    def status(self) -> None:
+        """
+        Gets status from all repositories.
+        """
+    
+        for repo in self.repos:
+            run_cmd(f"git status",
                     script_dir_path / repo['dir'])
 
     def pull(self) -> None:
@@ -210,10 +249,16 @@ class MassGit:
                 cmd = str(inpt)
                 if cmd == 'h' or cmd == 'help':
                     self.help()
-                elif cmd == 's' or cmd == 'show':
-                    self.show()
+                elif cmd == 'v' or cmd == 'version':
+                    self.version()
+                elif cmd == 'b' or cmd == 'branch':
+                    self.branch()
+                elif cmd == 'bs' or cmd == 'branches':
+                    self.branches()
                 elif cmd == 'r' or cmd == 'refresh':
                     self.refresh()
+                elif cmd == 's' or cmd == 'status':
+                    self.status()
                 elif cmd == 'p' or cmd == 'pull':
                     self.pull()
                 elif cmd == 'q' or cmd == 'quit':
